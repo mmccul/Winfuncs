@@ -69,9 +69,10 @@ If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
   be a default
 #>
 
-$curnet=get-netconnectionprofile -InterfaceAlias "Wi-Fi"
-$index=$curnet.InterfaceIndex
+$curnet=get-netconnectionprofile `
+  -InterfaceAlias "Wi-Fi" 
 
+$index=$curnet.InterfaceIndex
 
 $netdata=[XML](Get-Content $cfgfile)
 
@@ -85,27 +86,46 @@ foreach ( $ssid in $netdata.config.netdata.ssid) {
             $destpre="0.0.0.0/0"
 
             write-host "Static IP"
-            $out=Remove-NetRoute `
+            Remove-NetRoute `
               -InterfaceIndex $index `
               -DestinationPrefix $destpre `
               -Confirm:$false
 
-            $out=remove-netipaddress `
+            remove-netipaddress `
               -InterfaceIndex $index `
               -AddressFamily $family `
               -Confirm:$false
 
-            $out=set-netipinterface `
+            set-netipinterface `
               -InterfaceIndex $index `
               -AddressFamily $family `
               -Dhcp Disabled
 
-            $out=new-netipaddress `
+            new-netipaddress `
               -InterfaceIndex $index `
               -AddressFamily $family `
               -IPAddress $ip.ip `
               -PrefixLength $ip.netmask `
-              -DefaultGateway $ip.defgw
+              -DefaultGateway $ip.defgw 
+
+            if ( $netdata.config.netdata[$i].dns ) {
+                if ( $netdata.config.netdata[$i].dns.searchpath ) {
+                    write-host "Set static DNS searchpath"
+                    set-dnsclientglobalsetting `
+                      -SuffixSearchList $netdata.config.netdata[$i].dns.searchpath
+                }
+                if ( $netdata.config.netdata[$i].dns.srvr ) {
+                    write-host "Set Static DNS"
+                    $out=set-dnsclientserveraddress `
+                      -InterfaceIndex $index `
+                      -ServerAddresses $netdata.config.netdata[$i].dns.srvr.ip
+                }
+            } else {
+                write-host "Default DNS"
+                set-dnsclientserveraddress `
+                  -InterfaceIndex $index ` 
+                  -ServerAddresses "8.8.8.8"
+            }
         } else {
             write-host "Dynamic IP"
 
@@ -130,6 +150,7 @@ foreach ( $ssid in $netdata.config.netdata.ssid) {
             write-host "Static IPv6"
             $out=Remove-NetRoute `
               -InterfaceIndex $index `
+              -AddressFamily $family `
               -DestinationPrefix $destpre `
               -Confirm:$false
 
@@ -150,10 +171,13 @@ foreach ( $ssid in $netdata.config.netdata.ssid) {
               -PrefixLength $ip.netmask `
               -DefaultGateway $ip.defgw
         } else {
+            write-host "Dynamic IPv6"
+            <# Broken! 
             $out=set-netipinterface `
               -InterfaceIndex $index `
               -AddressFamily $family `
               -Dhcp Enabled
+            #>
         }
 
         if ( $netdata.config.netdata[$i].dns ) {
@@ -173,6 +197,7 @@ foreach ( $ssid in $netdata.config.netdata.ssid) {
              -Not $netdata.config.netdata[$i].v4 -And
              -Not $netdata.config.netdata[$i].v6 ) {
             
+            write-host "No DNS, No v4, No v6"
             $out=set-dnsclientserveraddress `
              -InterfaceIndex $index `
              -ResetServerAddress
@@ -191,6 +216,7 @@ foreach ( $ssid in $netdata.config.netdata.ssid) {
 
 
 if ( $found -eq 0 ) {
+    write-host "Default DHCP"
     $out=set-dnsclientserveraddress `
      -InterfaceIndex $index `
      -ResetServerAddress
