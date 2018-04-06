@@ -172,12 +172,10 @@ foreach ( $ssid in $netdata.config.netdata.ssid) {
               -DefaultGateway $ip.defgw
         } else {
             write-host "Dynamic IPv6"
-            <# Broken! 
             $out=set-netipinterface `
               -InterfaceIndex $index `
               -AddressFamily $family `
-              -Dhcp Enabled
-            #>
+              -RouterDiscovery Enabled
         }
 
         if ( $netdata.config.netdata[$i].dns ) {
