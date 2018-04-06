@@ -35,15 +35,12 @@
 
 CHANGE THIS VALUE HERE!
 
-
+#> 
 Param ( `
   [string]$cfgfile = "C:\Users\mmccul\bin\netconfig.xml" `
 )
 
-#>
-
-$cfgfile = "C:\Users\mmccul\bin\netconfig.xml" `
-<# 
+<#
 
 END CHANGE
 
