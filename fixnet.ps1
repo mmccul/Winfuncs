@@ -37,7 +37,8 @@ CHANGE THIS VALUE HERE!
 
 #> 
 Param ( `
-  [string]$cfgfile = "C:\Users\mmccul\bin\netconfig.xml" `
+  [string]$cfgfile = "C:\Users\mmccul\bin\netconfig.xml", `
+  [string]$ssid `
 )
 
 <#
@@ -48,7 +49,7 @@ END CHANGE
 
 $adapterstatus=Get-NetAdapter -Name "Wi-Fi"
 
-if ( $adapterstatus.Status -eq "Disconnected" ) {
+if ( $adapterstatus.Status -eq "Disconnected" -And [string]::IsNullOrEmpty($ssid) ) {
   write-host "No connected Wi-Fi - Aborting!"
   start-sleep -Seconds 3
   exit
@@ -66,17 +67,19 @@ If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
   be a default
 #>
 
-$curnet=get-netconnectionprofile `
-  -InterfaceAlias "Wi-Fi" 
+if ( $adapterstatus.Status -ne "Disconnected" ) {
+    $curnet=get-netconnectionprofile `
+      -InterfaceAlias "Wi-Fi"
+}
 
-$index=$curnet.InterfaceIndex
+$index=$adapterstatus.ifIndex
 
 $netdata=[XML](Get-Content $cfgfile)
 
 $found=0
 $i=0
-foreach ( $ssid in $netdata.config.netdata.ssid) {
-    if ( $curnet.Name -eq $ssid ) {
+foreach ( $curssid in $netdata.config.netdata.ssid) {
+    if ( $curnet.Name -eq $curssid -Or $ssid -eq $curssid ) {
         if ( $netdata.config.netdata[$i].v4.ip ) {
             $ip=$netdata.config.netdata[$i].v4
             $family="IPv4"
@@ -93,12 +96,12 @@ foreach ( $ssid in $netdata.config.netdata.ssid) {
               -AddressFamily $family `
               -Confirm:$false
 
-            set-netipinterface `
+            $out=set-netipinterface `
               -InterfaceIndex $index `
               -AddressFamily $family `
               -Dhcp Disabled
 
-            new-netipaddress `
+            $out=new-netipaddress `
               -InterfaceIndex $index `
               -AddressFamily $family `
               -IPAddress $ip.ip `
@@ -135,8 +138,10 @@ foreach ( $ssid in $netdata.config.netdata.ssid) {
               -AddressFamily $family `
               -Dhcp Enabled
 
-            ipconfig /renew "Wi-Fi"
-            start-path "http://www.example.com/"
+            if ($adapterstatus.status -ne "Disconnected" ) {
+                ipconfig /renew "Wi-Fi"
+                start-path "http://www.example.com/"
+            }
         }
 
         if ( $netdata.config.netdata[$i].v6.ip ) {
@@ -201,7 +206,9 @@ foreach ( $ssid in $netdata.config.netdata.ssid) {
              -InterfaceIndex $index `
              -Dhcp Enabled
 
-             ipconfig /renew "Wi-Fi"
+            if ($adapterstatus.status -ne "Disconnected" ) {
+                ipconfig /renew "Wi-Fi"
+            }
         }
         $found=1
         break
@@ -220,7 +227,9 @@ if ( $found -eq 0 ) {
      -InterfaceIndex $index `
      -Dhcp Enabled
 
-     ipconfig /renew "Wi-Fi"
-     start-path "http://www.example.com/"
+     if ($adapterstatus.status -ne "Disconnected" ) {
+         ipconfig /renew "Wi-Fi"
+         start-path "http://www.example.com/"
+     }
 } 
  
