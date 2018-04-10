@@ -76,10 +76,6 @@ If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
     Break
 }
 
-write-host "DEBUG: cfgfile=$cfgfile"
-write-host "DEBUG: alias=$alias"
-start-sleep -Seconds 3
-
 <# 
   We only work (for now) on "Wi-Fi" interface.  Maybe later that will just
   be a default
