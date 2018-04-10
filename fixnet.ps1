@@ -1,7 +1,7 @@
 <# 
   Fix the network
 
-  Uses (currently hard coded) C:\Users\mmccul\bin\netconfig.xml)
+  Uses (currently hard coded) $HOME\bin\netconfig.xml)
   Needs to be in the format
 
   <config>
@@ -37,7 +37,7 @@ CHANGE THIS VALUE HERE!
 
 #> 
 Param ( `
-  [string]$cfgfile = "C:\Users\mmccul\bin\netconfig.xml", `
+  [string]$cfgfile = "C:\users\mmccul\bin\netconfig.xml", `
   [string]$alias = "Wi-Fi", `
   [string]$ssid `
 )
