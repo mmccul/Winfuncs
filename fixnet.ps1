@@ -26,43 +26,23 @@
 
   If IPv4 is missing, rely on DHCP
   If DNS is missing (or only one provided, ignore/don't set.
-    Makes little sense to set static IP without setting DNS, but you can.
-
-  Haven't yet built the setting of v6 manually or other oddities there
+    It makes little sense to set static IP without setting DNS, but you can.
 #>
 
-<# First, get command line parameters
-
-CHANGE THIS VALUE HERE!
-
-#> 
+<# First, get command line parameters #> 
 Param ( `
   [string]$cfgfile = "C:\users\mmccul\bin\netconfig.xml", `
   [string]$alias = "Wi-Fi", `
   [string]$ssid `
 )
 
-<#
-
-END CHANGE
-
-#>
-
 $adapterstatus=Get-NetAdapter -Name $alias
 
 if ( $adapterstatus.Status -eq "Disconnected" -And [string]::IsNullOrEmpty($ssid) ) {
-  write-host "No connected Wi-Fi - Aborting!"
+  write-host "No connected interface named $alias - Aborting!"
   start-sleep -Seconds 3
   exit
 }
-
-if ( [string]::IsNullOrEmpty($ssid) ) {
-    $arguments="-cfgfile $cfgfile -alias $alias"
-} else {
-    $arglist="-cfgfile `"$cfgfile`" -alias `"$alias`" -ssid `"$ssid`""
-}
-
- 
 
 <# Escalate to admin rights if we don't have it already #>
 If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {   
