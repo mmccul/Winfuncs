@@ -38,6 +38,7 @@ CHANGE THIS VALUE HERE!
 #> 
 Param ( `
   [string]$cfgfile = "C:\Users\mmccul\bin\netconfig.xml", `
+  [string]$alias = "Wi-Fi", `
   [string]$ssid `
 )
 
@@ -69,7 +70,7 @@ If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 
 if ( $adapterstatus.Status -ne "Disconnected" ) {
     $curnet=get-netconnectionprofile `
-      -InterfaceAlias "Wi-Fi"
+      -InterfaceAlias $alias
 }
 
 $index=$adapterstatus.ifIndex
@@ -139,8 +140,8 @@ foreach ( $curssid in $netdata.config.netdata.ssid) {
               -Dhcp Enabled
 
             if ($adapterstatus.status -ne "Disconnected" ) {
-                ipconfig /renew "Wi-Fi"
-                start-path "http://www.example.com/"
+                ipconfig /renew $alias
+                start-process "http://www.example.com/"
             }
         }
 
@@ -207,7 +208,7 @@ foreach ( $curssid in $netdata.config.netdata.ssid) {
              -Dhcp Enabled
 
             if ($adapterstatus.status -ne "Disconnected" ) {
-                ipconfig /renew "Wi-Fi"
+                ipconfig /renew $alias
             }
         }
         $found=1
@@ -228,8 +229,8 @@ if ( $found -eq 0 ) {
      -Dhcp Enabled
 
      if ($adapterstatus.status -ne "Disconnected" ) {
-         ipconfig /renew "Wi-Fi"
-         start-path "http://www.example.com/"
+         ipconfig /renew $alias
+         start-process "http://www.example.com/"
      }
 } 
  
