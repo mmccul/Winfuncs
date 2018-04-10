@@ -1,0 +1,35 @@
+<!-- This is an example XML netconfig.xml file.  Modify as appropriate for
+     your site
+-->
+<config>
+<netdata>
+  <ssid>My_Static_SSID</ssid>
+  <v4>
+    <ip>192.0.2.129</ip>
+    <netmask>24</netmask>
+    <defgw>192.0.2.254</defgw>
+  </v4>
+  <dns>
+    <srvr>
+      <ip>192.0.2.2</ip>
+      <ip>2001:db8::deaf:dead:beef:cafe</ip> 
+    </srvr>
+    <searchpath>example.com</searchpath>
+  </dns>
+</netdata>
+<netdata>
+  <ssid>Second_static_SSID</ssid>
+  <v4>
+    <ip>198.51.100.100</ip>  
+    <defgw>198.51.100.254</defgw>
+    <netmask>24</netmask>
+  </v4>
+  <dns>
+    <srvr>
+      <ip>198.51.100.2</ip>
+      <ip>2001:db8::fed:cafe:beef:db2</ip> 
+    </srvr>
+    <searchpath>example.com</searchpath>
+  </dns>
+</netdata>
+</config>
