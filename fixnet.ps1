@@ -48,7 +48,7 @@ END CHANGE
 
 #>
 
-$adapterstatus=Get-NetAdapter -Name "Wi-Fi"
+$adapterstatus=Get-NetAdapter -Name $alias
 
 if ( $adapterstatus.Status -eq "Disconnected" -And [string]::IsNullOrEmpty($ssid) ) {
   write-host "No connected Wi-Fi - Aborting!"
@@ -56,12 +56,29 @@ if ( $adapterstatus.Status -eq "Disconnected" -And [string]::IsNullOrEmpty($ssid
   exit
 }
 
+if ( [string]::IsNullOrEmpty($ssid) ) {
+    $arguments="-cfgfile $cfgfile -alias $alias"
+} else {
+    $arglist="-cfgfile `"$cfgfile`" -alias `"$alias`" -ssid `"$ssid`""
+}
+
+ 
+
 <# Escalate to admin rights if we don't have it already #>
 If (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {   
-    $arguments = "& '" + $myinvocation.mycommand.definition + "'"
-      Start-Process powershell -Verb runAs -ArgumentList $arguments
+    $arguments = ("& '" + $myinvocation.mycommand.definition + "'")
+    $arguments += " -cfgfile $cfgfile"
+    $arguments += " -alias $alias"
+    if ( -Not [string]::IsNullOrEmpty($ssid) ) {
+        $arguments += " -ssid $ssid"
+    }
+    Start-Process powershell -Verb runAs -ArgumentList $arguments
     Break
 }
+
+write-host "DEBUG: cfgfile=$cfgfile"
+write-host "DEBUG: alias=$alias"
+start-sleep -Seconds 3
 
 <# 
   We only work (for now) on "Wi-Fi" interface.  Maybe later that will just
